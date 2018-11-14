@@ -1,10 +1,4 @@
 const Board = require("./board");
-const readline = require('readline');
-
-const reader = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 
 class Game {
   constructor(reader) {
@@ -13,24 +7,49 @@ class Game {
     this._turns  = 0;
   }
 
-  run(reader, completionCallback) {
-    while (this._turns < 9 && !gameOver(this._board)) {
-      if (this._turns % 2 === 1) {
-        reader.question("X, what coordinate?", (coord) => {
-          if ([1, 2, 3, 4, 5, 6, 7, 8, 9].includes(coord)) {
-            
-          }
-        });
-      }
+  run(completionCallback) {
+    let reader = this._reader
+    this._board.show_board();
+    while (this._turns < 9 && !gameOver()) {
+      this._turns % 2 === 1 ? makeTurn('X') : makeTurn('O');
     }
-  }
-
-  endGame(board, turn) {
-    // if game is won, reader.close(); with a message
-  }
-
-  endTurn(winner) {
-    console.log(`${winner} wins!`);
     reader.close();
+    completionCallback();
+  }
+
+  makeTurn(turn) {
+    let reader = this._reader;
+    reader.question(`${turn}, what coordinate? `, (pick) => {
+      if ([...Array(9).keys()].includes(pick) && this._board.includes(pick)) {
+        this._board.edit_board(pick, turn);
+        this._board.show_board();
+        this._turns += 1;
+      } else {
+        console.log("Invalid input.");
+      }
+    });
+  }
+
+  gameOver() {
+    let board = this._board;
+    let sets  = [
+      [board[0][0], board[2][0], board[4][0]],
+      [board[0][2], board[2][2], board[4][2]],
+      [board[0][4], board[2][4], board[4][4]],
+      [board[0][0], board[0][2], board[0][4]],
+      [board[2][0], board[2][2], board[2][4]],
+      [board[4][0], board[4][2], board[4][4]],
+      [board[0][0], board[2][2], board[4][4]],
+      [board[0][4], board[2][2], board[4][0]],
+    ];
+    sets.forEach(function(arr) {
+      let result = arr.filter(char => char === 'X');
+      if (result.length === 3 || result.length === 0) {
+        return true;
+      }
+    })
+    return false;
   }
 };
+
+module.exports = Game;
