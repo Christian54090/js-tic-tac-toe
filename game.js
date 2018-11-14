@@ -8,12 +8,10 @@ class Game {
   }
 
   run(completionCallback) {
-    let reader = this._reader
     this._board.show_board();
-    while (this._turns < 9 && !gameOver()) {
+    while (this._turns < 9 /* && gameOver() === false */) {
       this._turns % 2 === 1 ? makeTurn('X') : makeTurn('O');
     }
-    reader.close();
     completionCallback();
   }
 
