@@ -8,34 +8,29 @@ class Game {
   }
 
   run(completionCallback) {
-    let gameCheck = gameOver(this._board);
+    let reader = this._reader;
+    let player = ['X', 'O'][this._turns % 2];
     this._board.show_board();
-    if (this._turns < 9 && !gameCheck) {
-      if (this._turns % 2 === 1) {
-        makeTurn('X');
-        run(completionCallback);
-      } else {
-        makeTurn('O');
-        run(completionCallback);
-      }
+    if (this._turns < 9 && !this.gameOver()) {
+      reader.question(`${player}, what coordinate? `, answer => {
+        this.makeTurn(answer, player)
+      });
+      this.run(completionCallback);
+    }
+    completionCallback;
+  }
+
+  makeTurn(ans, player) {
+    if ([...Array(9).keys()].includes(ans - 1) && this._board.includes(ans)) {
+      this._board.edit_board(ans, player);
+      this._turns += 1;
     } else {
-      completionCallback();
+      console.log("Invalid input.");
     }
   }
 
-  makeTurn(turn) {
-    let reader = this._reader;
-    reader.question(`${turn}, what coordinate? `, (pick) => {
-      if ([...Array(9).keys()].includes(pick) && this._board.includes(pick)) {
-        this._board.edit_board(pick, turn);
-        this._turns += 1;
-      } else {
-        console.log("Invalid input.");
-      }
-    });
-  }
-
-  gameOver(board) {
+  gameOver() {
+    let board = this._board.display
     let sets  = [
       [board[0][0], board[2][0], board[4][0]],
       [board[0][2], board[2][2], board[4][2]],
@@ -47,8 +42,9 @@ class Game {
       [board[0][4], board[2][2], board[4][0]],
     ];
     sets.forEach(function(arr) {
-      let result = arr.filter(char => char === 'X');
-      if (result.length === 3 || result.length === 0) {
+      let resultX = arr.filter(char => char === 'X');
+      let resultO = arr.filter(char => char === 'O');
+      if (resultX.length === 3 || resultO.length === 3) {
         return true;
       }
     })
